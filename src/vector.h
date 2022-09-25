@@ -48,14 +48,16 @@ public:
 
     friend vector_t& operator+=(vector_t&, const vector_t&);
     friend vector_t& operator-=(vector_t&, const vector_t&);
-    friend vector_t& operator*=(vector_t&, float);
     friend vector_t& operator*=(vector_t&, const vector_t&);
+    friend vector_t& operator*=(vector_t&, float);
+    friend vector_t& operator/=(vector_t&, float);
 
     friend vector_t operator+(vector_t, const vector_t&);
     friend vector_t operator-(vector_t, const vector_t&);
+    friend vector_t operator*(vector_t, const vector_t&);
     friend vector_t operator*(vector_t, float);
     friend vector_t operator*(float, vector_t);
-    friend vector_t operator*(vector_t, const vector_t&);
+    friend vector_t operator/(vector_t, float);
 
     friend float    dot  (const vector_t&, const vector_t&);
     friend vector_t cross(const vector_t&, const vector_t&);

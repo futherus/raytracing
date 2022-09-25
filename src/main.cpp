@@ -16,6 +16,8 @@ constexpr vector_t from_rgb(float r, float g, float b)
     return vector_t(r / 255.f, g / 255.f, b / 255.f);
 }
 
+const vector_t COLOR_WHITE = from_rgb(255.f, 255.f, 255.f);
+const vector_t COLOR_LIGHTYELLOW = from_rgb(255.f, 255.f, 102.f);
 const vector_t COLOR_RED = from_rgb(255.f, 0.f, 0.f);
 const vector_t COLOR_GREEN = from_rgb(0.f, 255.f, 0.f);
 const vector_t COLOR_BLUE = from_rgb(0.f, 0.f, 255.f);
@@ -33,13 +35,14 @@ int main()
     texture.create(SCENE_WIDTH, SCENE_HEIGHT);
     sf::Sprite sprite(texture);
     uint32_t* pixels = new uint32_t[SCENE_WIDTH * SCENE_HEIGHT];
-    
-    ball_t ball({0.5f, 0.f, 0.f}, 0.5f, COLOR_BLUE);
-    light_t light({1.f, 1.f, 0.f}, COLOR_BLUE);
-    scene_t scene(ball, light, COLOR_DARKSLATEGRAY, 0.15f * COLOR_BLUE);
+
+    float angle = 0.f;    
+    ball_t ball({0.f, 0.f, 0.f}, 0.5f, COLOR_RED, 15.f);
+    light_t light({1.f, 1.f, 1.f}, COLOR_LIGHTYELLOW);
+    scene_t scene(ball, light, COLOR_DARKSLATEGRAY, 0.15f * COLOR_RED);
 
     axes_t axes({0, 0}, {SCENE_WIDTH, SCENE_HEIGHT},
-                {-1, -1, 0}, {1, 1, 0}
+                {-2, -2, 0}, {2, 2, 0}
                );
 
     while(window.isOpen())
@@ -64,6 +67,13 @@ int main()
         }
 
         sf::Time elapsed = clock.restart();
+        angle += elapsed.asSeconds();
+
+        light.set_dir({1.f, std::cos(angle), std::sin(angle)});
+        scene.set_light(light);
+
+        ball.set_pos({std::cos(angle), 0.f, 0.f});
+        scene.set_ball(ball);
 
         for (uint32_t y_pos = 0; y_pos < SCENE_HEIGHT; y_pos++)
         {

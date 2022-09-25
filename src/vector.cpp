@@ -24,15 +24,6 @@ vector_t& operator-=(vector_t& a, const vector_t& b)
     return a;
 }
 
-vector_t& operator*=(vector_t& a, float scale)
-{
-    a.x_ *= scale;
-    a.y_ *= scale;
-    a.z_ *= scale;
-
-    return a;
-}
-
 vector_t& operator*=(vector_t& a, const vector_t& b)
 {
     a.x_ *= b.x_;
@@ -40,6 +31,24 @@ vector_t& operator*=(vector_t& a, const vector_t& b)
     a.z_ *= b.z_;
 
     return a;
+}
+
+vector_t& operator*=(vector_t& vec, float scale)
+{
+    vec.x_ *= scale;
+    vec.y_ *= scale;
+    vec.z_ *= scale;
+
+    return vec;
+}
+
+vector_t& operator/=(vector_t& vec, float scale)
+{
+    vec.x_ /= scale;
+    vec.y_ /= scale;
+    vec.z_ /= scale;
+
+    return vec;
 }
 
 vector_t operator+(vector_t a, const vector_t& b)
@@ -51,6 +60,12 @@ vector_t operator+(vector_t a, const vector_t& b)
 vector_t operator-(vector_t a, const vector_t& b)
 {
     a -= b;
+    return a;
+}
+
+vector_t operator*(vector_t a, const vector_t& b)
+{
+    a *= b;
     return a;
 }
 
@@ -66,10 +81,10 @@ vector_t operator*(float scale, vector_t vec)
     return vec;
 }
 
-vector_t operator*(vector_t a, const vector_t& b)
+vector_t operator/(vector_t vec, float scale)
 {
-    a *= b;
-    return a;
+    vec /= scale;
+    return vec;
 }
 
 float dot(const vector_t& a, const vector_t& b)
