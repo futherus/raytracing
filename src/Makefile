@@ -41,7 +41,7 @@ CXXFLAGS ?= 	   -O2 -g -std=c++14 -fmax-errors=100 -Wall -Wextra   				\
     			#    -fsanitize=vptr                                                 				\
     			#    -lm -pie 					 
 
-SRC 	:= main.cpp vector.cpp axes.cpp
+SRC 	:= main.cpp vector.cpp axes.cpp scene.cpp graphics.cpp
 OUT 	:= main.o
 
 # temporary object files

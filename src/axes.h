@@ -1,57 +1,30 @@
 #ifndef AXES_H
 #define AXES_H
 
-#include <SFML/Graphics.hpp>
-#include <vector>
 #include <iostream>
+#include <assert.h>
 
 #include "vector.h"
 
-class axes_t : public sf::Drawable, public sf::Transformable
+class axes_t
 {
 private:
-    sf::Vector2f tl_pos_;
-    sf::Vector2f br_pos_;
+    point_t tl_pos_;
+    point_t br_pos_;
 
-    sf::Vector2f min_lim_;
-    sf::Vector2f max_lim_;
-
-    std::vector<sf::VertexArray> vertices_;
-    sf::VertexArray borders_;
+    vector_t min_lim_;
+    vector_t max_lim_;
 
 public:
-    axes_t(sf::Vector2f  tl_pos, sf::Vector2f  br_pos,
-           sf::Vector2f min_lim, sf::Vector2f max_lim)
-        : tl_pos_(tl_pos), br_pos_(br_pos), min_lim_(min_lim), max_lim_(max_lim),
-          vertices_(), borders_()
+    axes_t(point_t  tl_pos, point_t  br_pos,
+           vector_t min_lim, vector_t max_lim)
+        : tl_pos_(tl_pos), br_pos_(br_pos), min_lim_(min_lim), max_lim_(max_lim)
     {
-        borders_.append(sf::Vector2f(tl_pos.x, tl_pos.y));
-        borders_.append(sf::Vector2f(tl_pos.x, br_pos.y));
-        borders_.append(sf::Vector2f(br_pos.x, br_pos.y));
-        borders_.append(sf::Vector2f(br_pos.x, tl_pos.y));
-        borders_.append(sf::Vector2f(tl_pos.x, tl_pos.y));
-    
-        borders_.setPrimitiveType(sf::LineStrip);
+        assert(min_lim.z_ == 0.f && max_lim.z_ == 0.f);
     }
 
-    void clear() { vertices_.clear(); }
-
-    void draw(const vector_t& vec, const vector_t& base = vector_t(0, 0));
-
-private:
-    sf::Vector2f real2pixel(float x_real, float y_real);
-
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        states.transform *= getTransform();
-
-        // states.texture = &m_tileset;
-        
-        target.draw(borders_, states);
-
-        for(size_t i = 0; i < vertices_.size(); i++)
-            target.draw(vertices_[i], states);
-    }
+    vector_t pixel2real(point_t pixel);
+    // point_t real2pixel(vector_t real);
 };
 
 #endif // AXES_H

@@ -2,27 +2,45 @@
 #include <unistd.h>
 #include <cmath>
 #include "axes.h"
+#include "graphics.h"
+#include "scene.h"
 
-const float CONST_PI = 3.14159;
+const uint32_t WINDOW_WIDTH  = 1600;
+const uint32_t WINDOW_HEIGHT = 1200;
+
+const uint32_t SCENE_WIDTH = 600;
+const uint32_t SCENE_HEIGHT = 600;
+
+constexpr vector_t from_rgb(float r, float g, float b)
+{
+    return vector_t(r / 255.f, g / 255.f, b / 255.f);
+}
+
+const vector_t COLOR_RED = from_rgb(255.f, 0.f, 0.f);
+const vector_t COLOR_GREEN = from_rgb(0.f, 255.f, 0.f);
+const vector_t COLOR_BLUE = from_rgb(0.f, 0.f, 255.f);
+const vector_t COLOR_SLATEGRAY = from_rgb(112.f, 128.f, 144.f);
+const vector_t COLOR_DARKSLATEGRAY = from_rgb(47.f, 79.f, 79.f);
 
 int main()
 {
-    axes_t axes1(sf::Vector2f(100, 100), sf::Vector2f(400, 400),
-                 sf::Vector2f(-1, -1),   sf::Vector2f(1, 1));
-
-    axes_t axes2(sf::Vector2f(500, 100), sf::Vector2f(800, 400),
-                 sf::Vector2f(-1, -1),   sf::Vector2f(1, 1));
-
-    axes_t stopwatch_axes(sf::Vector2f(900, 100), sf::Vector2f(1200, 400),
-                          sf::Vector2f(-1, -1),   sf::Vector2f(1, 1));
-
-    sf::Clock stopwatch;
-
-    float angle  = 0;
-    float length = 0.5;
-
-    sf::RenderWindow window(sf::VideoMode(1600, 1200), "My window name", sf::Style::Default);
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT),
+                            "My window name", sf::Style::Default);
+    
     sf::Clock clock;
+
+    sf::Texture texture;
+    texture.create(SCENE_WIDTH, SCENE_HEIGHT);
+    sf::Sprite sprite(texture);
+    uint32_t* pixels = new uint32_t[SCENE_WIDTH * SCENE_HEIGHT];
+    
+    ball_t ball({0.5f, 0.f, 0.f}, 0.5f, COLOR_BLUE);
+    light_t light({1.f, 1.f, 0.f}, COLOR_BLUE);
+    scene_t scene(ball, light, COLOR_DARKSLATEGRAY, 0.15f * COLOR_BLUE);
+
+    axes_t axes({0, 0}, {SCENE_WIDTH, SCENE_HEIGHT},
+                {-1, -1, 0}, {1, 1, 0}
+               );
 
     while(window.isOpen())
     {
@@ -47,32 +65,20 @@ int main()
 
         sf::Time elapsed = clock.restart();
 
-        angle += elapsed.asSeconds();
-        vector_t vec (length * std::cos(angle), length * std::sin(angle));
-        vector_t base(length * std::cos(angle * 2), length * std::sin(angle * 2));
-        float secs = CONST_PI / 2 - stopwatch.getElapsedTime().asSeconds() * 2 * CONST_PI / 60;
-        vector_t stopwatch_sec(length * std::cos(secs),
-                               length * std::sin(secs));
-        float mins = CONST_PI / 2 - stopwatch.getElapsedTime().asSeconds() * 2 * CONST_PI / 360;
-        vector_t stopwatch_mins(length * 0.8 * std::cos(mins),
-                                length * 0.8 * std::sin(mins));
+        for (uint32_t y_pos = 0; y_pos < SCENE_HEIGHT; y_pos++)
+        {
+            for (uint32_t x_pos = 0; x_pos < SCENE_WIDTH; x_pos++)
+            {
+                vector_t real = axes.pixel2real({x_pos, y_pos});
+                vector_t color = scene.eval_color(real);
+                set_pixel(pixels[y_pos * SCENE_WIDTH + x_pos], color);
+            }
+        }
 
         window.clear();
-        axes1.clear();
-        axes2.clear();
-        stopwatch_axes.clear();
+        texture.update((sf::Uint8*) pixels);
 
-        axes1.draw(vec, base);
-        axes1.draw(base);
-        axes1.draw(base + vec);
-        axes2.draw(vec);
-        stopwatch_axes.draw(stopwatch_sec);
-        stopwatch_axes.draw(stopwatch_mins);
-
-        window.draw(axes1);
-        window.draw(axes2);
-        window.draw(stopwatch_axes);
-
+        window.draw(sprite);
         window.display();
     }
 
