@@ -37,7 +37,7 @@ public:
         :x_(vec.x_), y_(vec.y_), z_(vec.z_)
     {}
 
-    vector_t& operator= (const vector_t& vec)
+    constexpr vector_t& operator=(const vector_t& vec)
     {
         x_ = vec.x_;
         y_ = vec.y_;
@@ -46,11 +46,14 @@ public:
         return *this;
     }
 
-    friend vector_t& operator+=(vector_t&, const vector_t&);
-    friend vector_t& operator-=(vector_t&, const vector_t&);
-    friend vector_t& operator*=(vector_t&, const vector_t&);
-    friend vector_t& operator*=(vector_t&, float);
-    friend vector_t& operator/=(vector_t&, float);
+    vector_t& operator+=(const vector_t&);
+    vector_t& operator-=(const vector_t&);
+    vector_t& operator*=(const vector_t&);
+    vector_t& operator*=(float);
+    vector_t& operator/=(float);
+
+    bool is_zero() const;
+    void saturate(float);
 
     friend vector_t operator+(vector_t, const vector_t&);
     friend vector_t operator-(vector_t, const vector_t&);
@@ -58,6 +61,8 @@ public:
     friend vector_t operator*(vector_t, float);
     friend vector_t operator*(float, vector_t);
     friend vector_t operator/(vector_t, float);
+    friend vector_t operator-(vector_t);
+    friend vector_t operator+(vector_t);
 
     friend float    dot  (const vector_t&, const vector_t&);
     friend vector_t cross(const vector_t&, const vector_t&);

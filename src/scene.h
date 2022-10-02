@@ -8,21 +8,7 @@
 class scene_t;
 class ray_t;
 
-class camera_t
-{
-private:
-    vector_t pov_;
-
-    axes_t   axes_;
-
-public:
-    camera_t(const vector_t& pov, const axes_t& axes)
-        : pov_(pov), axes_(axes)
-    {}
-
-    void init_ray(ray_t& ray, point_t pixel) const;
-};
-
+//=============================================================================
 class ball_t
 {
 private:
@@ -54,7 +40,7 @@ public:
 
     vector_t pos() const { return pos_; }
     float radius() const { return radius_; }
-    vector_t col() const { return col_; }
+    vector_t color() const { return col_; }
     float glare()  const { return glare_; }
 
     void set_pos(const vector_t& new_pos) { pos_ = new_pos; }
@@ -62,7 +48,7 @@ public:
     void set_col(const vector_t& new_col) { col_ = new_col; }
     void set_glare(float new_glare) { glare_ = new_glare; }
 
-    /* virtual */ bool collision(vector_t& col, ray_t ray) const;
+    /* virtual */ bool collision(vector_t& col, const ray_t& ray) const;
 };
 
 class light_t
@@ -93,13 +79,29 @@ public:
 
     vector_t pos() const { return pos_; }
     float radius() const { return radius_; }
-    vector_t col() const { return col_; }
+    vector_t color() const { return col_; }
 
     void set_pos(const vector_t& new_pos) { pos_ = new_pos; }
     void set_radius(float new_radius) { radius_ = new_radius; }
     void set_col(const vector_t& new_col) { col_ = new_col; }
 
-    /* virtual */ bool collision(vector_t& col, ray_t ray) const;
+    /* virtual */ bool collision(vector_t& col, const ray_t& ray) const;
+};
+
+//=============================================================================
+class camera_t
+{
+private:
+    vector_t pov_;
+
+    axes_t   axes_;
+
+public:
+    camera_t(const vector_t& pov, const axes_t& axes)
+        : pov_(pov), axes_(axes)
+    {}
+
+    void init_ray(ray_t& ray, point_t pixel) const;
 };
 
 class ray_t
@@ -110,26 +112,31 @@ private:
     int heir_depth_;
 
     vector_t pos_;
-    vector_t unit_;
+    vector_t unit_dir_;
+
+    ray_t(const ray_t&) = delete;
+    ray_t& operator=(const ray_t&) = delete;
 
 public:
     ray_t(const ray_t& parent_ray, vector_t pos, vector_t dir)
         : parent_(parent_ray.parent_), heir_depth_(parent_ray.heir_depth_),
-          pos_(pos), unit_(dir * std::sqrt(dot(dir, dir)))
+          pos_(pos), unit_dir_(dir / std::sqrt(dot(dir, dir)))
     {
         heir_depth_--;
     }
 
     ray_t(const scene_t* parent, int heir_depth)
         : parent_(parent), heir_depth_(heir_depth),
-          pos_(vector_t()), unit_(vector_t())
+          pos_(vector_t()), unit_dir_(vector_t())
     {}
 
+    ~ray_t() = default;
+
     vector_t pos() const { return pos_; }
-    vector_t dir() const { return unit_; }
+    vector_t dir() const { return unit_dir_; }
 
     void set_pos(const vector_t& pos) { pos_ = pos; }
-    void set_dir(const vector_t& dir) { unit_ = dir * std::sqrt(dot(dir, dir)); }
+    void set_dir(const vector_t& dir) { unit_dir_ = dir / std::sqrt(dot(dir, dir)); }
 
     vector_t emit() const;
 };
@@ -141,6 +148,7 @@ private:
     ball_t ball_;
     light_t light_;
 
+    // FIXME no difference in bckgrnd/ambient?
     vector_t bckgrnd_col_;
     vector_t ambient_col_;
 

@@ -1,54 +1,66 @@
 #include "vector.h"
 #include <iostream>
 
-std::ostream& operator<<(std::ostream& stream, const vector_t& vec)
+vector_t& vector_t::operator+=(const vector_t& b)
 {
-    return stream << "(" << vec.x_ << ", " << vec.y_  << ", " << vec.z_ << ")";
+    x_ += b.x_;
+    y_ += b.y_;
+    z_ += b.z_;
+
+    return *this;
 }
 
-vector_t& operator+=(vector_t& a, const vector_t& b)
+vector_t& vector_t::operator-=(const vector_t& b)
 {
-    a.x_ += b.x_;
-    a.y_ += b.y_;
-    a.z_ += b.z_;
+    x_ -= b.x_;
+    y_ -= b.y_;
+    z_ -= b.z_;
 
-    return a;
+    return *this;
 }
 
-vector_t& operator-=(vector_t& a, const vector_t& b)
+vector_t& vector_t::operator*=(const vector_t& b)
 {
-    a.x_ -= b.x_;
-    a.y_ -= b.y_;
-    a.z_ -= b.z_;
+    x_ *= b.x_;
+    y_ *= b.y_;
+    z_ *= b.z_;
 
-    return a;
+    return *this;
 }
 
-vector_t& operator*=(vector_t& a, const vector_t& b)
+vector_t& vector_t::operator*=(float scale)
 {
-    a.x_ *= b.x_;
-    a.y_ *= b.y_;
-    a.z_ *= b.z_;
+    x_ *= scale;
+    y_ *= scale;
+    z_ *= scale;
 
-    return a;
+    return *this;
 }
 
-vector_t& operator*=(vector_t& vec, float scale)
+vector_t& vector_t::operator/=(float scale)
 {
-    vec.x_ *= scale;
-    vec.y_ *= scale;
-    vec.z_ *= scale;
+    x_ /= scale;
+    y_ /= scale;
+    z_ /= scale;
 
-    return vec;
+    return *this;
 }
 
-vector_t& operator/=(vector_t& vec, float scale)
+bool vector_t::is_zero() const
 {
-    vec.x_ /= scale;
-    vec.y_ /= scale;
-    vec.z_ /= scale;
+    float vec_sq = x_ * x_ + y_ * y_ + z_ * z_;
+    // FIXME need to find better solution
+    return vec_sq < __FLT_EPSILON__;
+}
 
-    return vec;
+void vector_t::saturate(float lim)
+{
+    if (x_ > lim)
+        x_ = lim;
+    if (y_ > lim)
+        y_ = lim;
+    if (z_ > lim)
+        z_ = lim;
 }
 
 vector_t operator+(vector_t a, const vector_t& b)
@@ -87,6 +99,16 @@ vector_t operator/(vector_t vec, float scale)
     return vec;
 }
 
+vector_t operator-(vector_t vec)
+{
+    return (-1) * vec;
+}
+
+vector_t operator+(vector_t vec)
+{
+    return vec;
+}
+
 float dot(const vector_t& a, const vector_t& b)
 {
     return a.x_ * b.x_ + a.y_ * b.y_ + a.z_ * b.z_;
@@ -102,4 +124,9 @@ vector_t cross(const vector_t& a, const vector_t& b)
     };
 
     return tmp;
+}
+
+std::ostream& operator<<(std::ostream& stream, const vector_t& vec)
+{
+    return stream << "(" << vec.x_ << ", " << vec.y_  << ", " << vec.z_ << ")";
 }
