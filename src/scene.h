@@ -4,12 +4,24 @@
 #include "vector.h"
 #include "axes.h"
 #include <cmath>
+#include <vector>
 
 class scene_t;
 class ray_t;
 
 //=============================================================================
-class ball_t
+class object_t
+{
+public:
+    virtual bool is_intersection(float& distance, const ray_t& ray) const = 0;
+    virtual vector_t intersect(const ray_t& ray) const = 0;
+
+    virtual ~object_t() = 0;
+};
+
+inline object_t::~object_t() {};
+
+class ball_t : public object_t
 {
 private:
     vector_t pos_;
@@ -19,24 +31,13 @@ private:
     float glare_;
 
 public:
+    ball_t(const ball_t& ball)            = default;
+    ball_t& operator=(const ball_t& ball) = default;
+    ~ball_t()                             = default;
+
     ball_t(const vector_t& pos, float radius, const vector_t& col, float glare)
         : pos_(pos), radius_(radius), col_(col), glare_(glare)
     {}
-
-    ball_t(const ball_t& ball)
-        : pos_(ball.pos_), radius_(ball.radius_), col_(ball.col_), glare_(ball.glare_)
-    {}
-
-    ball_t&
-    operator=(const ball_t& ball)
-    {
-        pos_ = ball.pos_;
-        radius_ = ball.radius_;
-        col_ = ball.col_;
-        glare_ = ball.glare_;
-
-        return *this;
-    }
 
     vector_t pos() const { return pos_; }
     float radius() const { return radius_; }
@@ -48,10 +49,11 @@ public:
     void set_col(const vector_t& new_col) { col_ = new_col; }
     void set_glare(float new_glare) { glare_ = new_glare; }
 
-    /* virtual */ bool collision(vector_t& col, const ray_t& ray) const;
+    bool is_intersection(float& distance, const ray_t& ray) const override;
+    vector_t intersect(const ray_t& ray) const override;
 };
 
-class light_t
+class light_t : public object_t
 {
 private:
     vector_t pos_;
@@ -60,22 +62,13 @@ private:
     vector_t col_;
 
 public:
+    light_t(const light_t& ball)            = default;
+    light_t& operator=(const light_t& ball) = default;
+    ~light_t()                              = default;
+
     light_t(const vector_t& pos, float radius, const vector_t& col)
         : pos_(pos), radius_(radius), col_(col)
     {}
-
-    light_t(const light_t& light)
-        : pos_(light.pos_), radius_(light.radius_), col_(light.col_)
-    {}
-
-    light_t& operator=(const light_t& light)
-    {
-        pos_    = light.pos_;
-        radius_ = light.radius_;
-        col_    = light.col_;
-
-        return *this;
-    }
 
     vector_t pos() const { return pos_; }
     float radius() const { return radius_; }
@@ -85,7 +78,8 @@ public:
     void set_radius(float new_radius) { radius_ = new_radius; }
     void set_col(const vector_t& new_col) { col_ = new_col; }
 
-    /* virtual */ bool collision(vector_t& col, const ray_t& ray) const;
+    bool is_intersection(float& distance, const ray_t& ray) const override;
+    vector_t intersect(const ray_t& ray) const override;
 };
 
 //=============================================================================
@@ -103,6 +97,8 @@ public:
 
     void init_ray(ray_t& ray, point_t pixel) const;
 };
+
+//=============================================================================
 
 class ray_t
 {
@@ -145,8 +141,7 @@ class scene_t
 {
 private:
     camera_t camera_;
-    ball_t ball_;
-    light_t light_;
+    std::vector<const object_t*> objects_;
 
     // FIXME no difference in bckgrnd/ambient?
     vector_t bckgrnd_col_;
@@ -155,20 +150,15 @@ private:
     friend ray_t;
 
 public:
-    scene_t(const camera_t& cam, const ball_t& ball, const light_t& light,
+    scene_t(const camera_t& cam,
             const vector_t& bckgrnd_col, const vector_t& ambient_col)
-        : camera_(cam), ball_(ball), light_(light),
+        : camera_(cam), objects_(),
           bckgrnd_col_(bckgrnd_col), ambient_col_(ambient_col)
     {}
 
-    void set_light(const light_t& new_light)
+    void add_object(const object_t& obj)
     {
-        light_ = new_light;
-    }
-
-    void set_ball(const ball_t& new_ball)
-    {
-        ball_ = new_ball;
+        objects_.push_back(&obj);
     }
 
     vector_t eval_color(const point_t& point) const;

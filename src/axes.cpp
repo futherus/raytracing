@@ -20,7 +20,7 @@ vector_t axes_t::pixel2real(point_t pixel) const
     assert(pixel.y_ <= sz_pixel_.y_);
 
     vector_t real = tl_pos_;
-    
+
     real += x_side_ * ((float) pixel.x_ / (float) sz_pixel_.x_);
     real += y_side_ * ((float) pixel.y_ / (float) sz_pixel_.y_);
 

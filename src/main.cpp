@@ -41,17 +41,21 @@ int main()
                 { 40.f,  0.f,  0.f},
                 { 0.f, -24.f,  0.f}
                 );
-    std::cout << axes.pixel2real({0, 0}) << " "
-              << axes.pixel2real({SCENE_WIDTH, SCENE_HEIGHT}) << std::endl;
-    camera_t cam({0.f, 0.f, 70.f}, axes);
+    // std::cout << axes.pixel2real({0, 0}) << " "
+    //           << axes.pixel2real({SCENE_WIDTH, SCENE_HEIGHT}) << std::endl;
+    camera_t cam({0.f, 0.f, 60.f}, axes);
 
-    ball_t   ball({0.f, 0.f, -20.f}, 5.f, COLOR_SLATEGRAY, 15.f);
+    ball_t   ball_1({ 5.f, 0.f, -20.f}, 5.f, COLOR_DARKSLATEGRAY, 15.f);
+    ball_t   ball_2({-5.f, 0.f, -20.f}, 5.f, COLOR_SLATEGRAY, 15.f);
     light_t  light({0.f, 0.f, 0.f}, 3.f, COLOR_WHITE);
-    scene_t  scene(cam, ball, light, COLOR_DARKSLATEGRAY, 0.15f * COLOR_RED);
+    scene_t  scene(cam, COLOR_DARKSLATEGRAY, 0.15f * COLOR_RED);
+    scene.add_object(ball_1);
+    scene.add_object(ball_2);
+    scene.add_object(light);
 
-    ray_t ray(&scene, 3);
-    cam.init_ray(ray, {0, 0});
-    std::cout << "Ray: " << ray.pos() << " " << ray.dir() << std::endl;
+    // ray_t ray(&scene, 3);
+    // cam.init_ray(ray, {0, 0});
+    // std::cout << "Ray: " << ray.pos() << " " << ray.dir() << std::endl;
 
     float angle = 0;
     while(window.isOpen())
@@ -79,8 +83,7 @@ int main()
         // std::cout << (1 / elapsed.asSeconds()) << std::endl;
         angle += elapsed.asSeconds();
 
-        light.set_pos({12.f * std::cos(angle), 12.f * std::sin(angle), -20.f});
-        scene.set_light(light);
+        light.set_pos({20.f * std::cos(angle), 20.f * std::sin(angle), -20.f});
 
         for (uint32_t y_pos = 0; y_pos < SCENE_HEIGHT; y_pos++)
         {

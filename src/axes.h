@@ -13,7 +13,7 @@ private:
     point_t sz_pixel_;
 
     vector_t tl_pos_;
-    
+
     vector_t x_side_;
     vector_t y_side_;
 

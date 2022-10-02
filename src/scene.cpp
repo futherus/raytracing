@@ -11,10 +11,10 @@ void camera_t::init_ray(ray_t& ray, point_t pixel) const
     ray.set_dir(dir);
 }
 
-bool ball_t::collision(vector_t& color, const ray_t& ray) const
+bool ball_t::is_intersection(float& dist, const ray_t& ray) const
 {
     vector_t delta = pos() - ray.pos();
-    
+
     // dir is unit
     float project = dot(delta, ray.dir());
     if (project < 0)
@@ -26,7 +26,29 @@ bool ball_t::collision(vector_t& color, const ray_t& ray) const
     float rad_sq = radius() * radius();
     if (distance_sq >= rad_sq)
         return false;
-    
+
+    // dist^2 + (k*dir)^2 = r^2, r^2 > dist^2
+    float k = std::sqrt(rad_sq - distance_sq);
+
+    // dir is unit
+    dist = project - k;
+    // if (!(dist > -__FLT_EPSILON__))
+    //     fprintf(stderr, "Ray emitted inside object? %lg\n", dist);
+
+    return true;
+}
+
+vector_t ball_t::intersect(const ray_t& ray) const
+{
+    vector_t delta = pos() - ray.pos();
+
+    // dir is unit
+    float project = dot(delta, ray.dir());
+    vector_t distance = ray.dir() * project - delta;
+
+    float distance_sq = dot(distance, distance);
+    float rad_sq = radius() * radius();
+
     // n^2 + (k*dir)^2 = r^2, r^2 > n^2
     float k = std::sqrt(rad_sq - distance_sq);
     vector_t rad = distance - k * ray.dir();
@@ -36,16 +58,16 @@ bool ball_t::collision(vector_t& color, const ray_t& ray) const
     vector_t reflect = 2 * normal * dot(-ray.dir(), normal) - (-ray.dir()); 
 
     ray_t reflect_ray(ray, point, reflect);
-    color = this->color() * reflect_ray.emit();
+    vector_t color = this->color() * reflect_ray.emit();
     color.saturate(1.f);
 
-    return true;
+    return color;
 }
 
-bool light_t::collision(vector_t& color, const ray_t& ray) const
+bool light_t::is_intersection(float& dist, const ray_t& ray) const
 {
     vector_t delta = pos() - ray.pos();
-    
+
     // dir is unit
     float project = dot(delta, ray.dir());
     if (project < 0)
@@ -57,32 +79,59 @@ bool light_t::collision(vector_t& color, const ray_t& ray) const
     float rad_sq = radius() * radius();
     if (distance_sq >= rad_sq)
         return false;
-    
-    color = this->color();
-    // color.saturate(1.f);
+
+    // n^2 + (k*dir)^2 = r^2, r^2 > n^2
+    float k = std::sqrt(rad_sq - distance_sq);
+
+    // dir is unit
+    dist = project - k;
+    // if (!(dist > -__FLT_EPSILON__))
+    //     fprintf(stderr, "Ray emitted inside object? %lg\n", dist);
 
     return true;
 }
 
+vector_t light_t::intersect(const ray_t&) const
+{
+    return color();
+}
+
 vector_t ray_t::emit() const
 {
-    if (heir_depth_ <= 0)
+    if (heir_depth_ == 0)
         return parent_->ambient_col_;
+
+    assert(heir_depth_ > 0);
 
     vector_t color;
 
-    if (parent_->ball_.collision(color, *this))
-        return color;
-    
-    if (parent_->light_.collision(color, *this))
-        return color;
-    
+    float dist     = 0.f;
+    float min_dist = 0.f;
+    size_t index   = (size_t) -1;
+
+    for (size_t i = 0; i < parent_->objects_.size(); i++)
+    {
+        if (parent_->objects_[i]->is_intersection(dist, *this))
+        {
+            if (dist < min_dist || index == (size_t) -1)
+            {
+                min_dist = dist;
+                index = i;
+            }
+        }
+    }
+
+    if (index != (size_t) -1)
+        return parent_->objects_[index]->intersect(*this);
+
+    // std::cout << "Ambient emit\n";
+
     return parent_->ambient_col_;
 }
 
 vector_t scene_t::eval_color(const point_t& pixel) const
 {
-    ray_t initial(this, 3);
+    ray_t initial(this, 5);
 
     camera_.init_ray(initial, pixel);
 

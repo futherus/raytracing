@@ -25,6 +25,10 @@ public:
     float y_;
     float z_;
 
+    vector_t(const vector_t& vec)            = default;
+    vector_t& operator=(const vector_t& vec) = default;
+    ~vector_t()                              = default;
+
     constexpr vector_t(float x, float y, float z)
         : x_(x), y_(y), z_(z)
     {}
@@ -32,19 +36,6 @@ public:
     constexpr vector_t()
         :x_(0), y_(0), z_(0)
     {}
-
-    constexpr vector_t(const vector_t& vec)
-        :x_(vec.x_), y_(vec.y_), z_(vec.z_)
-    {}
-
-    constexpr vector_t& operator=(const vector_t& vec)
-    {
-        x_ = vec.x_;
-        y_ = vec.y_;
-        z_ = vec.z_;
-
-        return *this;
-    }
 
     vector_t& operator+=(const vector_t&);
     vector_t& operator-=(const vector_t&);
